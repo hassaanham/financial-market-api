@@ -4,6 +4,7 @@ import pandas as pd
 
 app = FastAPI(title="Financial Market Data API")
 
+# Sample stock data (simulated market data)
 STOCKS = {
     "AAPL": {"price": 212.45, "previous_close": 210.10, "currency": "USD"},
     "MSFT": {"price": 418.72, "previous_close": 415.40, "currency": "USD"},
@@ -38,6 +39,7 @@ def get_stock(symbol: str):
 @app.get("/compare")
 def compare_stocks(symbols: str):
     symbol_list = [symbol.strip().upper() for symbol in symbols.split(",")]
+
     stocks = []
 
     for symbol in symbol_list:
@@ -54,7 +56,9 @@ def compare_stocks(symbols: str):
         raise HTTPException(status_code=404, detail="No valid stock symbols found")
 
     df = pd.DataFrame(stocks)
-    df["change"] = df["price"] - df["previous_close"]
+
+    # calculate price change
+    df["change"] = (df["price"] - df["previous_close"]).round(2)
 
     return df.to_dict(orient="records")
 
@@ -72,5 +76,6 @@ def market_news():
             "source": "Demo external API",
             "articles": data
         }
+
     except requests.exceptions.RequestException:
         raise HTTPException(status_code=500, detail="Failed to fetch market news")
